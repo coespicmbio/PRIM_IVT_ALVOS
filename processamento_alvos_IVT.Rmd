@@ -1,6 +1,6 @@
 ---
 title: "Processamento e Consolidação dos Alvos IVT por Bioma"
-author: "Fernando Lima - COESP/CGCON/DIBIO/ICMBIO"
+author: "COESP/CGCON/DIBIO/ICMBIO"
 output: html_document
 date: "2026-03-04"
 ---
@@ -42,7 +42,7 @@ library(stringr)
 library(stringdist)
 ```
 
-Os arquivos já passoram por normalizações prévias a partir dos CSVs de entrada, passando por uma série de funções.
+Os arquivos já passaram por normalizações prévias a partir dos CSVs de entrada, passando por uma série de funções.
 
 Importante: qualquer correção manual deve ser documentada, pois impacta reprodutibilidade.
 
@@ -196,7 +196,57 @@ Aqui utilizamos `n_distinct()` para evitar supercontagem por repetição de UP.
 cerrado <- read_csv("data_output/alvos_Processados_Cerrado.csv")
 ```
 
-## 5.2 Extração de alvos por componente
+## 5.2 Identificação de gêneros isolados
+
+Em algumas situações, quando uma UP tinha muitos alvos houve um corte no final do pdf de origem deixando a lista incompleta e apenas com o gênero no último registro. Por isso foi necessário identificar após o processamento para não retirar classes de fitofisionomias. Esses casos são inválidos para Fauna e Flora, pois representam perda do epíteto específico.
+
+Critério:
+
+-   Palavra única
+
+-   Primeira letra maiúscula
+
+-   Restante minúsculo
+
+```{r}
+generos_isolados <- cerrado$ALVO[
+  grepl("^[A-Z][a-z-]+$", cerrado$ALVO)
+]
+
+generos_isolados <- sort(unique(generos_isolados))
+generos_isolados
+```
+
+## 5.3 Remoção condicional de gêneros isolados
+
+A remoção ocorre apenas quando:
+
+-   COMPONENTE é Fauna OU Flora
+
+-   ALVO corresponde ao padrão de gênero isolado
+
+```{r}
+cerrado <- cerrado %>%
+  mutate(
+    remover = COMPONENTE %in% c("Fauna", "Flora") &
+      grepl("^[A-Z][a-z-]+$", ALVO)
+  ) %>%
+  filter(!remover) %>%
+  select(-remover)
+```
+
+Checagem da limpeza
+
+```{r}
+generos_isolados <- cerrado$ALVO[
+  grepl("^[A-Z][a-z-]+$", cerrado$ALVO)
+]
+
+generos_isolados <- sort(unique(generos_isolados))
+generos_isolados
+```
+
+## 5.4 Extração de alvos por componente
 
 ### Fauna
 
@@ -242,7 +292,7 @@ alvos_patrimonio_cerrado <- cerrado |>
 alvos_patrimonio_cerrado
 ```
 
-## 5.3 Contagem de alvos únicos por componente
+## 5.5 Contagem de alvos únicos por componente
 
 ```{r}
 cerrado |>
@@ -252,6 +302,13 @@ cerrado |>
 ```
 
 Aqui utilizamos `n_distinct()` para evitar supercontagem por repetição de UP.
+
+## 5.6 Salvar arquivo de saída
+
+```{r}
+write_csv(cerrado, "data_output/alvos_Processados_Cerrado.csv")
+```
+
 
 # 6. Mata Atlântica
 

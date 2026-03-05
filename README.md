@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # PRIM_IVT_ALVOS
 
 Estruturação automatizada dos **alvos de conservação** presentes no

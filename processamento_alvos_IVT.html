@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Fernando Lima - COESP/CGCON/DIBIO/ICMBIO" />
+<meta name="author" content="COESP/CGCON/DIBIO/ICMBIO" />
 
 <meta name="date" content="2026-03-04" />
 
@@ -352,7 +352,7 @@ display: none;
 
 <h1 class="title toc-ignore">Processamento e Consolidação dos Alvos IVT
 por Bioma</h1>
-<h4 class="author">Fernando Lima - COESP/CGCON/DIBIO/ICMBIO</h4>
+<h4 class="author">COESP/CGCON/DIBIO/ICMBIO</h4>
 <h4 class="date">2026-03-04</h4>
 
 </div>
@@ -368,10 +368,11 @@ IVT para os seis biomas brasileiros.</p>
 <li><p>Fauna</p></li>
 <li><p>Flora</p></li>
 <li><p>Fitofisionomias</p></li>
-<li><p>Patrimonio</p></li>
+<li><p>Patrimônio Espeleológico</p></li>
 </ul>
 <p>O objetivo final é:</p>
 <ol style="list-style-type: decimal">
+<li><p>Disponibilizar a informação em formato tabular</p></li>
 <li><p>Garantir integridade estrutural dos dados.</p></li>
 <li><p>Identificar inconsistências.</p></li>
 <li><p>Gerar listas únicas por bioma.</p></li>
@@ -385,7 +386,7 @@ IVT para os seis biomas brasileiros.</p>
 library(dplyr)
 library(stringr)
 library(stringdist)</code></pre>
-<p>Os arquivos já passoram por normalizações prévias a partir dos CSVs
+<p>Os arquivos já passaram por normalizações prévias a partir dos CSVs
 de entrada, passando por uma série de funções.</p>
 <p>Importante: qualquer correção manual deve ser documentada, pois
 impacta reprodutibilidade.</p>
@@ -1016,8 +1017,58 @@ por repetição de UP.</p>
 <h2>5.1 Leitura do arquivo processado</h2>
 <pre class="r"><code>cerrado &lt;- read_csv(&quot;data_output/alvos_Processados_Cerrado.csv&quot;)</code></pre>
 </div>
+<div id="identificação-de-gêneros-isolados" class="section level2">
+<h2>5.2 Identificação de gêneros isolados</h2>
+<p>Em algumas situações, quando uma UP tinha muitos alvos houve um corte
+no final do pdf de origem deixando a lista incompleta e apenas com o
+gênero no último registro. Por isso foi necessário identificar após o
+processamento para não retirar classes de fitofisionomias. Esses casos
+são inválidos para Fauna e Flora, pois representam perda do epíteto
+específico.</p>
+<p>Critério:</p>
+<ul>
+<li><p>Palavra única</p></li>
+<li><p>Primeira letra maiúscula</p></li>
+<li><p>Restante minúsculo</p></li>
+</ul>
+<pre class="r"><code>generos_isolados &lt;- cerrado$ALVO[
+  grepl(&quot;^[A-Z][a-z-]+$&quot;, cerrado$ALVO)
+]
+
+generos_isolados &lt;- sort(unique(generos_isolados))
+generos_isolados</code></pre>
+<pre><code>##  [1] &quot;Hadrolaelia&quot;      &quot;Hemipogon&quot;        &quot;Lychnophora&quot;      &quot;Lychnophoriopsis&quot;
+##  [5] &quot;Melanoxylon&quot;      &quot;Merremia&quot;         &quot;Microlicia&quot;       &quot;Mimosa&quot;          
+##  [9] &quot;Ossaea&quot;           &quot;Peixotoa&quot;         &quot;Proteopsis&quot;       &quot;Savana&quot;          
+## [13] &quot;Schwenckia&quot;       &quot;Scuticaria&quot;       &quot;Sinningia&quot;        &quot;Stachytarpheta&quot;  
+## [17] &quot;Trembleya&quot;        &quot;Trimezia&quot;         &quot;Vellozia&quot;         &quot;Vriesea&quot;         
+## [21] &quot;Xyris&quot;</code></pre>
+</div>
+<div id="remoção-condicional-de-gêneros-isolados" class="section level2">
+<h2>5.3 Remoção condicional de gêneros isolados</h2>
+<p>A remoção ocorre apenas quando:</p>
+<ul>
+<li><p>COMPONENTE é Fauna OU Flora</p></li>
+<li><p>ALVO corresponde ao padrão de gênero isolado</p></li>
+</ul>
+<pre class="r"><code>cerrado &lt;- cerrado %&gt;%
+  mutate(
+    remover = COMPONENTE %in% c(&quot;Fauna&quot;, &quot;Flora&quot;) &amp;
+      grepl(&quot;^[A-Z][a-z-]+$&quot;, ALVO)
+  ) %&gt;%
+  filter(!remover) %&gt;%
+  select(-remover)</code></pre>
+<p>Checagem da limpeza</p>
+<pre class="r"><code>generos_isolados &lt;- cerrado$ALVO[
+  grepl(&quot;^[A-Z][a-z-]+$&quot;, cerrado$ALVO)
+]
+
+generos_isolados &lt;- sort(unique(generos_isolados))
+generos_isolados</code></pre>
+<pre><code>## [1] &quot;Savana&quot;</code></pre>
+</div>
 <div id="extração-de-alvos-por-componente-2" class="section level2">
-<h2>5.2 Extração de alvos por componente</h2>
+<h2>5.4 Extração de alvos por componente</h2>
 <div id="fauna-2" class="section level3">
 <h3>Fauna</h3>
 <pre class="r"><code>alvos_fauna_cerrado &lt;- cerrado |&gt;
@@ -1538,42 +1589,41 @@ alvos_flora_cerrado</code></pre>
 ## [659] &quot;Tibouchina riedeliana&quot;              &quot;Tillandsia crocata&quot;                
 ## [661] &quot;Trattinnickia ferruginea&quot;           &quot;Trembleya calycina&quot;                
 ## [663] &quot;Trembleya chamissoana&quot;              &quot;Trembleya hatschbachii&quot;            
-## [665] &quot;Trembleya pityoides&quot;                &quot;Trembleya pityoides fistulosa&quot;     
-## [667] &quot;Trichilia stellato-tomentosa&quot;       &quot;Trichocline nervosa&quot;               
-## [669] &quot;Trimezia exillima&quot;                  &quot;Trimezia fistulosa&quot;                
-## [671] &quot;Trimezia plicatifolia&quot;              &quot;Triraphis devia&quot;                   
-## [673] &quot;Tropaeolum warmingianum&quot;            &quot;Uebelmannia buiningii&quot;             
-## [675] &quot;Uebelmannia gummifera&quot;              &quot;Uebelmannia pectinifera&quot;           
-## [677] &quot;Valeriana reitziana&quot;                &quot;Vanilla dubia&quot;                     
-## [679] &quot;Vellozia alata&quot;                     &quot;Vellozia armata&quot;                   
-## [681] &quot;Vellozia barbata&quot;                   &quot;Vellozia epidendroides&quot;            
-## [683] &quot;Vellozia glabra&quot;                    &quot;Vellozia hatschbachii&quot;             
-## [685] &quot;Vellozia leptopetala&quot;               &quot;Vellozia lilacina&quot;                 
-## [687] &quot;Vellozia metzgerae&quot;                 &quot;Vellozia nuda&quot;                     
-## [689] &quot;Vellozia patens&quot;                    &quot;Vellozia phalocarpa&quot;               
-## [691] &quot;Vellozia piresiana&quot;                 &quot;Vellozia sessilis&quot;                 
-## [693] &quot;Vellozia subalata&quot;                  &quot;Vernonia adenophylla&quot;              
-## [695] &quot;Vernonia asteriflora&quot;               &quot;Vernonia echinocephala&quot;            
-## [697] &quot;Vernonia eitenii&quot;                   &quot;Vernonia irwinii&quot;                  
-## [699] &quot;Vernonia reitziana&quot;                 &quot;Vernonia souzae&quot;                   
-## [701] &quot;Vernonia spixiana&quot;                  &quot;Vernonia westermanii&quot;              
-## [703] &quot;Viguiera corumbensis&quot;               &quot;Viguiera filifolia&quot;                
-## [705] &quot;Viguiera hispida&quot;                   &quot;Viguiera linearifolia&quot;             
-## [707] &quot;Viguiera vernonioides&quot;              &quot;Virola surinamensis&quot;               
-## [709] &quot;Vochysia pygmaea&quot;                   &quot;Vriesea minarum&quot;                   
-## [711] &quot;Vriesea monacorum&quot;                  &quot;Vriesea saxicola&quot;                  
-## [713] &quot;Wedelia macedoi&quot;                    &quot;Wunderlichia cruelsiana&quot;           
-## [715] &quot;Wunderlichia senaeii&quot;               &quot;Xyris aurea&quot;                       
-## [717] &quot;Xyris blepharophylla&quot;               &quot;Xyris cipoensis&quot;                   
-## [719] &quot;Xyris coutensis&quot;                    &quot;Xyris dardanoi&quot;                    
-## [721] &quot;Xyris hystrix&quot;                      &quot;Xyris longifolia&quot;                  
-## [723] &quot;Xyris nigricans&quot;                    &quot;Xyris obtusiuscula&quot;                
-## [725] &quot;Xyris platystachya&quot;                 &quot;Xyris rigida&quot;                      
-## [727] &quot;Xyris sincorana&quot;                    &quot;Xyris sororia&quot;                     
-## [729] &quot;Xyris tortilis&quot;                     &quot;Xyris uninervis&quot;                   
-## [731] &quot;Xyris vacillans&quot;                    &quot;Xyris wawrae&quot;                      
-## [733] &quot;Zephyranthes candida&quot;               &quot;Zeyheria tuberculosa&quot;              
-## [735] &quot;Zygostigma australe&quot;</code></pre>
+## [665] &quot;Trembleya pityoides&quot;                &quot;Trichilia stellato-tomentosa&quot;      
+## [667] &quot;Trichocline nervosa&quot;                &quot;Trimezia exillima&quot;                 
+## [669] &quot;Trimezia fistulosa&quot;                 &quot;Trimezia plicatifolia&quot;             
+## [671] &quot;Triraphis devia&quot;                    &quot;Tropaeolum warmingianum&quot;           
+## [673] &quot;Uebelmannia buiningii&quot;              &quot;Uebelmannia gummifera&quot;             
+## [675] &quot;Uebelmannia pectinifera&quot;            &quot;Valeriana reitziana&quot;               
+## [677] &quot;Vanilla dubia&quot;                      &quot;Vellozia alata&quot;                    
+## [679] &quot;Vellozia armata&quot;                    &quot;Vellozia barbata&quot;                  
+## [681] &quot;Vellozia epidendroides&quot;             &quot;Vellozia glabra&quot;                   
+## [683] &quot;Vellozia hatschbachii&quot;              &quot;Vellozia leptopetala&quot;              
+## [685] &quot;Vellozia lilacina&quot;                  &quot;Vellozia metzgerae&quot;                
+## [687] &quot;Vellozia nuda&quot;                      &quot;Vellozia patens&quot;                   
+## [689] &quot;Vellozia phalocarpa&quot;                &quot;Vellozia piresiana&quot;                
+## [691] &quot;Vellozia sessilis&quot;                  &quot;Vellozia subalata&quot;                 
+## [693] &quot;Vernonia adenophylla&quot;               &quot;Vernonia asteriflora&quot;              
+## [695] &quot;Vernonia echinocephala&quot;             &quot;Vernonia eitenii&quot;                  
+## [697] &quot;Vernonia irwinii&quot;                   &quot;Vernonia reitziana&quot;                
+## [699] &quot;Vernonia souzae&quot;                    &quot;Vernonia spixiana&quot;                 
+## [701] &quot;Vernonia westermanii&quot;               &quot;Viguiera corumbensis&quot;              
+## [703] &quot;Viguiera filifolia&quot;                 &quot;Viguiera hispida&quot;                  
+## [705] &quot;Viguiera linearifolia&quot;              &quot;Viguiera vernonioides&quot;             
+## [707] &quot;Virola surinamensis&quot;                &quot;Vochysia pygmaea&quot;                  
+## [709] &quot;Vriesea minarum&quot;                    &quot;Vriesea monacorum&quot;                 
+## [711] &quot;Vriesea saxicola&quot;                   &quot;Wedelia macedoi&quot;                   
+## [713] &quot;Wunderlichia cruelsiana&quot;            &quot;Wunderlichia senaeii&quot;              
+## [715] &quot;Xyris aurea&quot;                        &quot;Xyris blepharophylla&quot;              
+## [717] &quot;Xyris cipoensis&quot;                    &quot;Xyris coutensis&quot;                   
+## [719] &quot;Xyris dardanoi&quot;                     &quot;Xyris hystrix&quot;                     
+## [721] &quot;Xyris longifolia&quot;                   &quot;Xyris nigricans&quot;                   
+## [723] &quot;Xyris obtusiuscula&quot;                 &quot;Xyris platystachya&quot;                
+## [725] &quot;Xyris rigida&quot;                       &quot;Xyris sincorana&quot;                   
+## [727] &quot;Xyris sororia&quot;                      &quot;Xyris tortilis&quot;                    
+## [729] &quot;Xyris uninervis&quot;                    &quot;Xyris vacillans&quot;                   
+## [731] &quot;Xyris wawrae&quot;                       &quot;Zephyranthes candida&quot;              
+## [733] &quot;Zeyheria tuberculosa&quot;               &quot;Zygostigma australe&quot;</code></pre>
 </div>
 <div id="fitofisionomias-2" class="section level3">
 <h3>Fitofisionomias</h3>
@@ -1643,7 +1693,7 @@ alvos_patrimonio_cerrado</code></pre>
 </div>
 </div>
 <div id="contagem-de-alvos-únicos-por-componente-2" class="section level2">
-<h2>5.3 Contagem de alvos únicos por componente</h2>
+<h2>5.5 Contagem de alvos únicos por componente</h2>
 <pre class="r"><code>cerrado |&gt;
   group_by(COMPONENTE) |&gt;
   summarise(n_alvos_unicos = n_distinct(ALVO)) |&gt;
@@ -1651,12 +1701,16 @@ alvos_patrimonio_cerrado</code></pre>
 <pre><code>## # A tibble: 4 × 2
 ##   COMPONENTE      n_alvos_unicos
 ##   &lt;chr&gt;                    &lt;int&gt;
-## 1 Flora                      735
+## 1 Flora                      734
 ## 2 Fauna                      171
 ## 3 Fitofisionomias             36
 ## 4 Patrimonio                  12</code></pre>
 <p>Aqui utilizamos <code>n_distinct()</code> para evitar supercontagem
 por repetição de UP.</p>
+</div>
+<div id="salvar-arquivo-de-saída" class="section level2">
+<h2>5.6 Salvar arquivo de saída</h2>
+<pre class="r"><code>write_csv(cerrado, &quot;data_output/alvos_Processados_Cerrado.csv&quot;)</code></pre>
 </div>
 </div>
 <div id="mata-atlântica" class="section level1">
@@ -1665,7 +1719,7 @@ por repetição de UP.</p>
 <h2>6.1 Leitura do arquivo processado</h2>
 <pre class="r"><code>mata_atlantica &lt;- read_csv(&quot;data_output/alvos_Processados_Mata_Atlantica.csv&quot;)</code></pre>
 </div>
-<div id="identificação-de-gêneros-isolados" class="section level2">
+<div id="identificação-de-gêneros-isolados-1" class="section level2">
 <h2>6.2 Identificação de gêneros isolados</h2>
 <p>Em algumas situações, quando uma UP tinha muitos alvos houve um corte
 no final do pdf de origem deixando a lista incompleta e apenas com o
@@ -1695,7 +1749,7 @@ generos_isolados</code></pre>
 ## [29] &quot;Vanhouttea&quot;     &quot;Vellozia&quot;       &quot;Vriesea&quot;        &quot;Wittrockia&quot;    
 ## [33] &quot;Xyris&quot;</code></pre>
 </div>
-<div id="remoção-condicional-de-gêneros-isolados" class="section level2">
+<div id="remoção-condicional-de-gêneros-isolados-1" class="section level2">
 <h2>6.3 Remoção condicional de gêneros isolados</h2>
 <p>A remoção ocorre apenas quando:</p>
 <ul>
@@ -2994,7 +3048,7 @@ alvos_patrimonio_mata_atlantica</code></pre>
 <p>Aqui utilizamos <code>n_distinct()</code> para evitar supercontagem
 por repetição de UP.</p>
 </div>
-<div id="salvar-arquivo-de-saída" class="section level2">
+<div id="salvar-arquivo-de-saída-1" class="section level2">
 <h2>6.6 Salvar arquivo de saída</h2>
 <pre class="r"><code>write_csv(mata_atlantica, &quot;data_output/alvos_Processados_Mata_Atlantica.csv&quot;)</code></pre>
 </div>

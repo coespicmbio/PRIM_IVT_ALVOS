@@ -1,0 +1,593 @@
+---
+title: "Processamento e Consolidação dos Alvos IVT por Bioma"
+author: "Fernando Lima - COESP/CGCON/DIBIO/ICMBIO"
+output: html_document
+date: "2026-03-04"
+---
+
+# 1. Objetivo
+
+Este documento descreve o processo de leitura, limpeza, padronização, contagem e consolidação dos alvos de conservação extraídos das planilhas IVT para os seis biomas brasileiros.
+
+Os componentes considerados são:
+
+-   Fauna
+
+-   Flora
+
+-   Fitofisionomias
+
+-   Patrimônio Espeleológico
+
+O objetivo final é:
+
+1.  Disponibilizar a informação em formato tabular
+
+2.  Garantir integridade estrutural dos dados.
+
+3.  Identificar inconsistências.
+
+4.  Gerar listas únicas por bioma.
+
+5.  Consolidar um banco único nacional.
+
+6.  Detectar possíveis erros de grafia.
+
+# 2. Pacotes
+
+```{r, warning=FALSE, message=FALSE}
+library(readr)
+library(dplyr)
+library(stringr)
+library(stringdist)
+```
+
+Os arquivos já passoram por normalizações prévias a partir dos CSVs de entrada, passando por uma série de funções.
+
+Importante: qualquer correção manual deve ser documentada, pois impacta reprodutibilidade.
+
+A lógica aplicada é:
+
+1.  Filtrar pelo componente.
+
+2.  Extrair a coluna ALVO.
+
+3.  Analise visual e checagem no ChatGPT
+
+4.  Ajuste de código e função de limpeza
+
+5.  Adicionar alterações em `data_reference/correcoes_padrao`
+
+# 3. Amazônia
+
+## 3.1 Leitura do arquivo processado
+
+```{r, warning=FALSE, message=FALSE}
+amazonia <- read_csv("data_output/alvos_Processados_Amazonia.csv")
+```
+
+## 3.2 Extração de alvos por componente
+
+### Fauna
+
+```{r}
+alvos_fauna_Amazonia <- amazonia |>
+  filter(COMPONENTE == "Fauna") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fauna_Amazonia
+```
+
+### Flora
+
+```{r}
+alvos_flora_Amazonia <- amazonia |>
+  filter(COMPONENTE == "Flora") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_flora_Amazonia
+```
+
+### Fitofisionomias
+
+```{r}
+alvos_fitofisionomias_Amazonia <- amazonia |>
+  filter(COMPONENTE == "Fitofisionomias") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fitofisionomias_Amazonia
+```
+
+### Patrimônio Espeleológico
+
+```{r}
+alvos_patrimonio_Amazonia <- amazonia |>
+  filter(COMPONENTE == "Patrimonio") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_patrimonio_Amazonia
+```
+
+## 3.3 Contagem de alvos únicos por componente
+
+```{r}
+amazonia |>
+  group_by(COMPONENTE) |>
+  summarise(n_alvos_unicos = n_distinct(ALVO)) |>
+  arrange(desc(n_alvos_unicos))
+```
+
+Aqui utilizamos `n_distinct()` para evitar supercontagem por repetição de UP.
+
+# 4. Caatinga
+
+## 4.1 Leitura do arquivo processado
+
+```{r, warning=FALSE, message=FALSE}
+caatinga <- read_csv("data_output/alvos_Processados_Caatinga.csv")
+```
+
+## 4.2 Extração de alvos por componente
+
+### Fauna
+
+```{r}
+alvos_fauna_caatinga <- caatinga |>
+  filter(COMPONENTE == "Fauna") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fauna_caatinga
+```
+
+### Flora
+
+```{r}
+alvos_flora_caatinga <- caatinga |>
+  filter(COMPONENTE == "Flora") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_flora_caatinga
+```
+
+### Fitofisionomias
+
+```{r}
+alvos_fitofisionomias_caatinga <- caatinga |>
+  filter(COMPONENTE == "Fitofisionomias") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fitofisionomias_caatinga
+```
+
+### Patrimônio Espeleológico
+
+```{r}
+alvos_patrimonio_caatinga <- caatinga |>
+  filter(COMPONENTE == "Patrimonio") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_patrimonio_caatinga
+```
+
+## 4.3 Contagem de alvos únicos por componente
+
+```{r}
+caatinga |>
+  group_by(COMPONENTE) |>
+  summarise(n_alvos_unicos = n_distinct(ALVO)) |>
+  arrange(desc(n_alvos_unicos))
+```
+
+Aqui utilizamos `n_distinct()` para evitar supercontagem por repetição de UP.
+
+# 5. Cerrado
+
+## 5.1 Leitura do arquivo processado
+
+```{r, warning=FALSE, message=FALSE}
+cerrado <- read_csv("data_output/alvos_Processados_Cerrado.csv")
+```
+
+## 5.2 Extração de alvos por componente
+
+### Fauna
+
+```{r}
+alvos_fauna_cerrado <- cerrado |>
+  filter(COMPONENTE == "Fauna") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fauna_cerrado
+```
+
+### Flora
+
+```{r}
+alvos_flora_cerrado <- cerrado |>
+  filter(COMPONENTE == "Flora") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_flora_cerrado
+```
+
+### Fitofisionomias
+
+```{r}
+alvos_fitofisionomias_cerrado <- cerrado |>
+  filter(COMPONENTE == "Fitofisionomias") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fitofisionomias_cerrado
+```
+
+### Patrimônio Espeleológico
+
+```{r}
+alvos_patrimonio_cerrado <- cerrado |>
+  filter(COMPONENTE == "Patrimonio") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_patrimonio_cerrado
+```
+
+## 5.3 Contagem de alvos únicos por componente
+
+```{r}
+cerrado |>
+  group_by(COMPONENTE) |>
+  summarise(n_alvos_unicos = n_distinct(ALVO)) |>
+  arrange(desc(n_alvos_unicos))
+```
+
+Aqui utilizamos `n_distinct()` para evitar supercontagem por repetição de UP.
+
+# 6. Mata Atlântica
+
+## 6.1 Leitura do arquivo processado
+
+```{r, warning=FALSE, message=FALSE}
+mata_atlantica <- read_csv("data_output/alvos_Processados_Mata_Atlantica.csv")
+```
+
+## 6.2 Identificação de gêneros isolados
+
+Em algumas situações, quando uma UP tinha muitos alvos houve um corte no final do pdf de origem deixando a lista incompleta e apenas com o gênero no último registro. Por isso foi necessário identificar após o processamento para não retirar classes de fitofisionomias. Esses casos são inválidos para Fauna e Flora, pois representam perda do epíteto específico.
+
+Critério:
+
+-   Palavra única
+
+-   Primeira letra maiúscula
+
+-   Restante minúsculo
+
+```{r}
+generos_isolados <- mata_atlantica$ALVO[
+  grepl("^[A-Z][a-z-]+$", mata_atlantica$ALVO)
+]
+
+generos_isolados <- sort(unique(generos_isolados))
+generos_isolados
+```
+
+## 6.3 Remoção condicional de gêneros isolados
+
+A remoção ocorre apenas quando:
+
+-   COMPONENTE é Fauna OU Flora
+
+-   ALVO corresponde ao padrão de gênero isolado
+
+```{r}
+mata_atlantica <- mata_atlantica %>%
+  mutate(
+    remover = COMPONENTE %in% c("Fauna", "Flora") &
+      grepl("^[A-Z][a-z-]+$", ALVO)
+  ) %>%
+  filter(!remover) %>%
+  select(-remover)
+```
+
+Checagem da limpeza
+
+```{r}
+generos_isolados <- mata_atlantica$ALVO[
+  grepl("^[A-Z][a-z-]+$", mata_atlantica$ALVO)
+]
+
+generos_isolados <- sort(unique(generos_isolados))
+generos_isolados
+```
+
+## 6.4 Correção de sufixos automáticos (.1, etc.)
+
+Primeiro remove sufixos numéricos no final:
+
+```{r}
+mata_atlantica <- mata_atlantica %>%
+  mutate(
+    ALVO = ALVO |>
+      str_replace("\\.[0-9]+$", "") |>
+      str_replace_all("\\.", "-")
+  )
+```
+
+Interpretação:
+
+`\\.` → ponto literal
+
+`[0-9]+` → um ou mais dígitos
+
+`$` → fim da string
+
+Remove apenas quando ocorre no final.
+
+### Fauna
+
+```{r}
+alvos_fauna_mata_atlantica <- mata_atlantica |>
+  filter(COMPONENTE == "Fauna") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fauna_mata_atlantica
+```
+
+### Flora
+
+```{r}
+alvos_flora_mata_atlantica <- mata_atlantica |>
+  filter(COMPONENTE == "Flora") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_flora_mata_atlantica
+```
+
+### Fitofisionomias
+
+```{r}
+alvos_fitofisionomias_mata_atlantica <- mata_atlantica |>
+  filter(COMPONENTE == "Fitofisionomias") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fitofisionomias_mata_atlantica
+```
+
+### Patrimônio Espeleológico
+
+```{r}
+alvos_patrimonio_mata_atlantica <- mata_atlantica |>
+  filter(COMPONENTE == "Patrimonio") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_patrimonio_mata_atlantica
+```
+
+## 6.5 Contagem de alvos únicos por componente
+
+```{r}
+mata_atlantica |>
+  group_by(COMPONENTE) |>
+  summarise(n_alvos_unicos = n_distinct(ALVO)) |>
+  arrange(desc(n_alvos_unicos))
+```
+
+Aqui utilizamos `n_distinct()` para evitar supercontagem por repetição de UP.
+
+## 6.6 Salvar arquivo de saída
+
+```{r}
+write_csv(mata_atlantica, "data_output/alvos_Processados_Mata_Atlantica.csv")
+```
+
+# 7. Pampa
+
+## 7.1 Leitura do arquivo processado
+
+```{r, warning=FALSE, message=FALSE}
+pampa <- read_csv("data_output/alvos_Processados_Pampa.csv")
+```
+
+## 7.2 Extração de alvos por componente
+
+### Fauna
+
+```{r}
+alvos_fauna_pampa <- pampa |>
+  filter(COMPONENTE == "Fauna") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fauna_pampa
+```
+
+### Flora
+
+```{r}
+alvos_flora_pampa <- pampa |>
+  filter(COMPONENTE == "Flora") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_flora_pampa
+```
+
+### Fitofisionomias
+
+```{r}
+alvos_fitofisionomias_pampa <- pampa |>
+  filter(COMPONENTE == "Fitofisionomias") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fitofisionomias_pampa
+```
+
+### Patrimônio Espeleológico
+
+```{r}
+alvos_patrimonio_pampa <- pampa |>
+  filter(COMPONENTE == "Patrimonio") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_patrimonio_pampa
+```
+
+## 7.3 Contagem de alvos únicos por componente
+
+```{r}
+pampa |>
+  group_by(COMPONENTE) |>
+  summarise(n_alvos_unicos = n_distinct(ALVO)) |>
+  arrange(desc(n_alvos_unicos))
+```
+
+Aqui utilizamos `n_distinct()` para evitar supercontagem por repetição de UP.
+
+# 8. Pantanal
+
+## 8.1 Leitura do arquivo processado
+
+```{r, warning=FALSE, message=FALSE}
+pantanal <- read_csv("data_output/alvos_Processados_Pantanal.csv")
+```
+
+## 8.2 Extração de alvos por componente
+
+### Fauna
+
+```{r}
+alvos_fauna_pantanal <- pantanal |>
+  filter(COMPONENTE == "Fauna") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fauna_pantanal
+```
+
+### Flora
+
+```{r}
+alvos_flora_pantanal <- pantanal |>
+  filter(COMPONENTE == "Flora") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_flora_pantanal
+```
+
+### Fitofisionomias
+
+```{r}
+alvos_fitofisionomias_pantanal <- pantanal |>
+  filter(COMPONENTE == "Fitofisionomias") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_fitofisionomias_pantanal
+```
+
+### Patrimônio Espeleológico
+
+```{r}
+alvos_patrimonio_pantanal <- pantanal |>
+  filter(COMPONENTE == "Patrimonio") |>
+  pull(ALVO) |>
+  unique() |>
+  sort()
+alvos_patrimonio_pantanal
+```
+
+## 8.3 Contagem de alvos únicos por componente
+
+```{r}
+pantanal |>
+  group_by(COMPONENTE) |>
+  summarise(n_alvos_unicos = n_distinct(ALVO)) |>
+  arrange(desc(n_alvos_unicos))
+```
+
+Aqui utilizamos `n_distinct()` para evitar supercontagem por repetição de UP.
+
+# 9. Consolidação dos Alvos - Nacional
+
+## 9.1 União dos seis biomas
+
+```{r}
+alvos <- bind_rows(
+  amazonia %>% select(ALVO, COMPONENTE),
+  caatinga %>% select(ALVO, COMPONENTE),
+  cerrado %>% select(ALVO, COMPONENTE),
+  mata_atlantica %>% select(ALVO, COMPONENTE),
+  pampa %>% select(ALVO, COMPONENTE),
+  pantanal %>% select(ALVO, COMPONENTE)
+) %>%
+  distinct()
+```
+
+Aqui a unicidade é definida por:
+
+(ALVO + COMPONENTE)
+
+Isso preserva eventuais inconsistências entre biomas.
+
+## 9.2 Exportação
+
+```{r}
+write_csv(alvos, "data_output/alvos_Processados_IVT.csv")
+```
+
+# 10. Detecção de possíveis erros de grafia
+
+Utiliza-se distância de Levenshtein.
+
+```{r}
+nomes <- alvos$ALVO
+
+dist_matrix <- stringdistmatrix(nomes, nomes, method = "lv")
+
+pares <- which(dist_matrix > 0 & dist_matrix <= 2, arr.ind = TRUE)
+
+resultado <- data.frame(
+  nome1 = nomes[pares[,1]],
+  nome2 = nomes[pares[,2]],
+  dist = dist_matrix[pares]
+) %>%
+  filter(nome1 < nome2)
+
+resultado
+```
+
+Critério:
+
+-   distância \> 0 (exclui iguais)
+
+-   distância ≤ 2 (erro provável de digitação)
+
+Isso permite identificar:
+
+-   letras duplicadas
+
+-   troca de caractere
+
+-   ausência de acento
+
+-   erro ortográfico leve
+
+Checar com a lista de alvos. Adicionar alteração em `data_reference/correcoes_padrao`

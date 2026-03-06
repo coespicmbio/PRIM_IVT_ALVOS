@@ -11,7 +11,7 @@ disponíveis no Material Suplementar do PRIM IVT, transformando o
 conteúdo textual em uma base de dados estruturada.
 
 O objetivo é permitir análise, revisão técnica e integração com outras
-bases utilizadas nas análises da COESP/CGCON/ICMBio e possíveis
+bases utilizadas nas análises da COESP/CGCON/DIBIO/ICMBio e possíveis
 interessados no uso dos dados.
 
 ------------------------------------------------------------------------

@@ -14,6 +14,8 @@ O objetivo é permitir análise, revisão técnica e integração com outras
 bases utilizadas nas análises da COESP/CGCON/DIBIO/ICMBio e possíveis
 interessados no uso dos dados.
 
+<img width="250" height="355" alt="image" src="https://github.com/user-attachments/assets/9fca50a6-9a23-4de9-a6dc-fac428f6d1e6" />
+
 ------------------------------------------------------------------------
 
 ## Contexto
